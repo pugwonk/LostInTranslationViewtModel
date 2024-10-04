@@ -1,11 +1,8 @@
 {
-	"name": "Abarth 595 SS Step 1",
-	"parent": "ks_abarth_595ss",
-	"brand": "Abarth",
-	"description": "Carlo Abarth began his well-known association with Fiat in 1952, building the Abarth 1500 Biposto upon Fiat mechanicals.<br><br>
-Fiat \"Nuova 500\" was introduced in 1957 and Abarth soon realized some versions with elaborate mechanics. In 1963 he was presented the \"595\", produced until the end of 1971 in two series. The Abarth receives from FIAT incomplete cars and then mounts on them the special pieces.<br><br>
-
-In February 1964 the 595 SS was presented, featuring a top speed of 130 km/h.",
+	"name": "Mitsuoka Viewt (Lost in Translation)",
+	"parent": "",
+	"brand": "Mitsuoka",
+	"description": "The Mitsuoka Viewt raced in 24 Hours of Lemons by the team, 'Lost in Translation'.",
 	"tags": ["#Vintage Touring", "rwd", "manual", "vintage", "street", "hot hatchback", "italy"],
 	"class": "street",
 
