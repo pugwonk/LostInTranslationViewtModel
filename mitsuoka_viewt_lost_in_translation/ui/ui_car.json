@@ -1,16 +1,15 @@
 {
-  "name": "aFiat Panda 900",
-  "brand": "Fiat",
-  "class": "street",
-  "country": "Italy",
-  "description": "The Fiat Panda, is a front- and all-wheel drive, five passenger city car manufactured and marketed by Fiat, now in its third generation.<br><br>The first generation Panda, introduced in 1980, was a two-box, three-door hatchback designed by Giorgetto Giugiaro and Aldo Mantovani of Italdesign and was manufactured through model year 2003 — receiving an all-wheel drive variant in 1983 and facelifts in 1986 and 1991. SEAT of Spain marketed a variation of the first generation Panda under license to Fiat, initially as the Panda and subsequently as the Marbella (1986–1998). <br><br>The second revision included a front grille with a smaller five-bar corporate badge, as well as revisions to trim and specifications across the range. New arrivals included the &#39;Selecta&#39;, which had a continuously variable transmission with an electromagnetic clutch. This transmission was available either with the normal 999 cc FIRE engine (revised with single-point fuel injection and a catalytic converter) or an all new 1108 cc FIRE unit, fitted with electronic fuel injection and a three-way catalytic converter and producing 51 bhp (38 kW).<br><br>The new CLX trim also featured a five-speed gearbox as standard. The range now comprised the 750 Young (769 cc ohv), 750 and 750 CLX (both 769 cc FIRE sohc), 900 Dance (903 cc ohv), 1000 Shopping, CLX, CL Selecta and S (all with 999 cc sohc, available with or without SPI and catalytic converter depending on the market), 1100 CL Selecta (1108 cc sohc with SPI and cat) and the 4x4 Trekking (999 cc, again available with and without a cat depending on the market). The Elettra concluded the range.",
+  "name": "Mitsuoka Viewt",
+  "brand": "Mitsuoka",
+  "class": "race",
+  "country": "Japan",
+  "description": "The world's fastest Mitsuoka Viewt.",
   "tags": [
     "fwd",
-    "street",
-    "#Panda900",
-    "Italy",
-    "vintage",
-    "manual"
+    "race",
+    "Japan",
+    "lemons",
+    "auto"
   ],
   "torqueCurve": [
     [
