@@ -1,0 +1,1 @@
+robocopy "C:\Users\chris\Documents\LostInTranslationViewtModel\mitsuoka_viewt" "C:\Users\chris\Documents\LostInTranslationViewtModel\mitsuoka_viewt_qg18_sentra_engine" /MIR /XF drivetrain.ini power.lut ui_car.json /XJD /R:3 /W:5
