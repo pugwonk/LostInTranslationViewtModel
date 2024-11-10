@@ -2,7 +2,7 @@
   "name": "Mitsuoka Viewt QG18 B15 Sentra Engine Swap", 
  	"parent": "mitsuoka_viewt",
   "brand": "Mitsuoka",
-  "description": "1995 Mitsuoka Viewt, as raced by team 'Lost in Translation' in the '24 Hours of Lemons' series in the USA.",
+  "description": "1995 Mitsuoka Viewt, as raced by team 'Lost in Translation' in the '24 Hours of Lemons' series in the USA.\n\nThis version has a QG18 engine with 5-speed manual transmission.\n\nModel designed by Arq Lugo (https://www.youtube.com/@arq_lugo)",
   "tags": [
     "race",
     "fwd"
