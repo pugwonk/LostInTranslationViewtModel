@@ -2,94 +2,63 @@
 setlocal
 cd /d "%~dp0"
 
+rem There are four cars, each with its own model (source\viewt_<model>.blend):
+rem   mitsuoka_viewt             - model "base": the road car in its factory colours
+rem   mitsuoka_viewt_lemons_2024 - model "2024", listed under the road car in Content Manager
+rem   mitsuoka_viewt_lemons_2025 - model "2025", ditto
+rem   mitsuoka_viewt_lemons_2026 - model "2026", ditto
+rem mitsuoka_viewt_lemons_2025 holds the shared data: everything except each car's own files is copied from it in step 3.
+set "MODELS=base 2024 2025 2026"
+set "DATA=mitsuoka_viewt_lemons_2025"
+
 echo ============================================================
 echo  Mitsuoka Viewt build
 echo ============================================================
 echo.
 
-rem 1. Export source\viewt.blend to source\model.fbx, if the .blend has changed since the last export.
+rem 1. Export each source\viewt_<model>.blend to source\viewt_<model>.fbx, if the .blend has changed since the last export.
 rem    Set BLENDER to blender.exe to override; otherwise use the newest Blender in Dropbox\programs.
-echo [1/4] Exporting the Blender model to FBX
-call :newer source\viewt.blend source\model.fbx
-if not errorlevel 1 (
-  echo       source\viewt.blend hasn't changed since source\model.fbx was exported - skipping.
-  goto fbx_done
+echo [1/4] Exporting the Blender models to FBX
+for %%m in (%MODELS%) do (
+  call :export %%m
+  if errorlevel 1 goto fail
 )
-if not defined BLENDER for /d %%d in ("%USERPROFILE%\Dropbox\programs\blender-*") do if exist "%%d\blender.exe" set "BLENDER=%%d\blender.exe"
-if not defined BLENDER (
-  echo       ERROR: Blender not found. Set BLENDER to the path of blender.exe.
-  goto fail
-)
-echo       Using %BLENDER%
-echo       Exporting source\viewt.blend to source\model.fbx...
-rem Leaves out the driver (AC adds its own) and hidden leftover objects; scale matches what ksEditor expects
-"%BLENDER%" -b source\viewt.blend --python-expr "import bpy, os; [o.select_set(not o.name.startswith('DRIVER:') and o.visible_get()) for o in bpy.data.objects]; bpy.ops.export_scene.fbx(filepath=os.path.join(os.path.dirname(bpy.data.filepath), 'model.fbx'), use_selection=True, apply_scale_options='FBX_SCALE_NONE', global_scale=0.01)" >nul
-if errorlevel 1 (
-  echo       ERROR: FBX export failed.
-  goto fail
-)
-echo       Done.
-:fbx_done
 echo.
 
-rem 2. The kn5 has to be made in ksEditor by hand. If the FBX or its material settings (model.fbx.ini) have
-rem    changed since viewt.kn5 was saved, say how, then wait so the new kn5 goes into the QG18 car and the zip.
+rem 2. The kn5s have to be made in ksEditor by hand. If a car's FBX or its material settings (viewt_<model>.fbx.ini)
+rem    have changed since its viewt.kn5 was saved, say how, then wait so the new kn5 goes into the zip.
 rem    Set KSEDITOR to the folder with ksEditor.exe to override the Steam lookup.
-echo [2/4] Checking the game model (viewt.kn5) is up to date
-call :kn5_stale
-if not errorlevel 1 (
-  echo       source\model.fbx and model.fbx.ini haven't changed since viewt.kn5 was saved - OK.
-  goto kn5_done
-)
-if not defined KSEDITOR for /f "usebackq delims=" %%d in (`powershell -NoProfile -Command "$s = (Get-ItemProperty HKCU:\Software\Valve\Steam -ErrorAction SilentlyContinue).SteamPath; if ($s) { $libs = @($s) + (Select-String -Path (Join-Path $s 'steamapps\libraryfolders.vdf') -Pattern '^\s*.path.\s+.(.+).\s*$' | ForEach-Object { $_.Matches[0].Groups[1].Value -replace '\\\\', '\' }); $libs | ForEach-Object { Join-Path $_ 'steamapps\common\assettocorsa\sdk\editor' } | Where-Object { Test-Path (Join-Path $_ 'ksEditor.exe') } | Select-Object -First 1 }"`) do set "KSEDITOR=%%d"
-if not defined KSEDITOR set "KSEDITOR=assettocorsa\sdk\editor in your Steam library"
-echo       source\model.fbx or model.fbx.ini is newer than mitsuoka_viewt\viewt.kn5,
-echo       so the game model needs re-saving in ksEditor:
-echo.
-echo         1. Open ksEditor:
-echo              %KSEDITOR%\ksEditor.exe
-echo         2. File ^> Open FBX, and pick:
-echo              %CD%\source\model.fbx
-echo            It loads the materials from model.fbx.ini automatically.
-echo         3. File ^> Save KN5 ^> Car, and save over:
-echo              %CD%\mitsuoka_viewt\viewt.kn5
-echo         4. Close ksEditor and come back here.
-echo.
-echo       Press any key once you've saved the kn5 to carry on with the build,
-echo       or close this window to stop.
-pause >nul
-call :kn5_stale
-if errorlevel 1 (
-  echo       WARNING: viewt.kn5 still looks out of date - carrying on with it anyway.
-) else (
-  echo       Got the new viewt.kn5.
-)
-:kn5_done
+echo [2/4] Checking the game models (viewt.kn5) are up to date
+for %%m in (%MODELS%) do call :kn5 %%m
 echo.
 
-rem 3. Copy the base car over the QG18 car, keeping the QG18-specific files
-echo [3/4] Copying mitsuoka_viewt over mitsuoka_viewt_qg18_sentra_engine
-robocopy mitsuoka_viewt mitsuoka_viewt_qg18_sentra_engine /MIR /XF mitsuoka_viewt.bank drivetrain.ini power.lut ui_car.json GUIDs.txt x.tuned mitsuoka_viewt_QG18_B15_Sentra_Engine_Swap.bank mitsuoka_viewt_QG18_B15_Sentra_Engine_Swap_lost_in_translation.bank mitsuoka_viewt_qg18_sentra_engine.bank upgrade.png /XJD /R:3 /W:5 /NDL /NJH /NJS /NP
-if errorlevel 8 (
-  echo       ERROR: Copying to the QG18 car failed.
-  goto fail
-)
-if errorlevel 1 (echo       Done.) else (echo       Already up to date - nothing to copy.)
+rem 3. Copy the shared data over the other cars, keeping each car's own files:
+rem      road car - its model, ui_car.json and skins (factory colours); tyres.ini gets the narrower tyre width
+rem      2024     - its model, ui_car.json and upgrade.png; tyres.ini gets the narrower tyre width
+rem      2026     - its model, ui_car.json and upgrade.png, and the QG18 engine and gearbox
+rem    The sound bank is the same for all of them but has to be named after the car folder, so it's copied
+rem    under the right name and GUIDs.txt is rewritten to match.
+echo [3/4] Copying %DATA% over the other cars
+call :mirror mitsuoka_viewt viewt.kn5 ui_car.json upgrade.png /XD skins
+if errorlevel 1 goto fail
+call :narrow_tyres mitsuoka_viewt
+call :mirror mitsuoka_viewt_lemons_2024 viewt.kn5 ui_car.json upgrade.png
+if errorlevel 1 goto fail
+call :narrow_tyres mitsuoka_viewt_lemons_2024
+call :mirror mitsuoka_viewt_lemons_2026 viewt.kn5 ui_car.json upgrade.png drivetrain.ini power.lut x.tuned
+if errorlevel 1 goto fail
 echo.
 
-rem 4. Zip both cars as content\cars\... so the zip can be dropped on Content Manager or extracted into the AC folder
+rem 4. Zip all the cars as content\cars\... so the zip can be dropped on Content Manager or extracted into the AC folder
 echo [4/4] Creating the distribution zip
 for /f "usebackq delims=" %%v in (`powershell -NoProfile -Command "(Get-Content -Raw mitsuoka_viewt\ui\ui_car.json | ConvertFrom-Json).version"`) do set "VERSION=%%v"
-set "ZIP=dist\mitsuoka_viewt_v%VERSION%.zip"
+set "ZIP=dist\mitsuoka_viewt_%VERSION%.zip"
 echo       Version %VERSION% (from mitsuoka_viewt\ui\ui_car.json)
 if exist dist\stage rmdir /s /q dist\stage
-for %%c in (mitsuoka_viewt mitsuoka_viewt_qg18_sentra_engine) do (
-  echo       Adding content\cars\%%c
-  robocopy %%c dist\stage\content\cars\%%c /E /XF data.acd /NFL /NDL /NJH /NJS /NP >nul
-  if errorlevel 8 (
-    echo       ERROR: Staging %%c for the zip failed.
-    goto fail
-  )
+for %%m in (%MODELS%) do (
+  call :car %%m
+  call :stage
+  if errorlevel 1 goto fail
 )
 if exist "%ZIP%" del "%ZIP%"
 echo       Compressing...
@@ -116,12 +85,120 @@ echo ============================================================
 pause
 exit /b 1
 
-rem Sets errorlevel 1 if source\model.fbx or model.fbx.ini is newer than mitsuoka_viewt\viewt.kn5, else 0
+rem Sets CAR to the car folder for model %1
+:car
+if "%1"=="base" (set "CAR=mitsuoka_viewt") else (set "CAR=mitsuoka_viewt_lemons_%1")
+exit /b 0
+
+rem Copies %CAR% into the zip staging folder. Sets errorlevel 1 on failure.
+:stage
+echo       Adding content\cars\%CAR%
+robocopy %CAR% dist\stage\content\cars\%CAR% /E /XF data.acd /NFL /NDL /NJH /NJS /NP >nul
+if errorlevel 8 (
+  echo       ERROR: Staging %CAR% for the zip failed.
+  exit /b 1
+)
+exit /b 0
+
+rem Exports source\viewt_%1.blend to source\viewt_%1.fbx if it's changed. Sets errorlevel 1 on failure.
+:export
+call :newer source\viewt_%1.blend source\viewt_%1.fbx
+if not errorlevel 1 (
+  echo       %1: source\viewt_%1.blend hasn't changed since it was exported - skipping.
+  exit /b 0
+)
+if not defined BLENDER for /d %%d in ("%USERPROFILE%\Dropbox\programs\blender-*") do if exist "%%d\blender.exe" set "BLENDER=%%d\blender.exe"
+if not defined BLENDER (
+  echo       ERROR: Blender not found. Set BLENDER to the path of blender.exe.
+  exit /b 1
+)
+echo       %1: exporting source\viewt_%1.blend to source\viewt_%1.fbx using %BLENDER%...
+rem Leaves out the driver (AC adds its own) and hidden leftover objects; scale matches what ksEditor expects
+"%BLENDER%" -b source\viewt_%1.blend --python-expr "import bpy, os; [o.select_set(not o.name.startswith('DRIVER:') and o.visible_get()) for o in bpy.data.objects]; bpy.ops.export_scene.fbx(filepath=os.path.join(os.path.dirname(bpy.data.filepath), 'viewt_%1.fbx'), use_selection=True, apply_scale_options='FBX_SCALE_NONE', global_scale=0.01)" >nul
+if errorlevel 1 (
+  echo       ERROR: FBX export failed.
+  exit /b 1
+)
+exit /b 0
+
+rem If model %1's kn5 is out of date, shows how to re-save it in ksEditor and waits
+:kn5
+call :car %1
+call :kn5_stale %1
+if not errorlevel 1 (
+  echo       %1: source\viewt_%1.fbx and its .ini haven't changed since %CAR%\viewt.kn5 was saved - OK.
+  exit /b 0
+)
+if not defined KSEDITOR for /f "usebackq delims=" %%d in (`powershell -NoProfile -Command "$s = (Get-ItemProperty HKCU:\Software\Valve\Steam -ErrorAction SilentlyContinue).SteamPath; if ($s) { $libs = @($s) + (Select-String -Path (Join-Path $s 'steamapps\libraryfolders.vdf') -Pattern '^\s*.path.\s+.(.+).\s*$' | ForEach-Object { $_.Matches[0].Groups[1].Value -replace '\\\\', '\' }); $libs | ForEach-Object { Join-Path $_ 'steamapps\common\assettocorsa\sdk\editor' } | Where-Object { Test-Path (Join-Path $_ 'ksEditor.exe') } | Select-Object -First 1 }"`) do set "KSEDITOR=%%d"
+if not defined KSEDITOR set "KSEDITOR=assettocorsa\sdk\editor in your Steam library"
+echo       %1: source\viewt_%1.fbx or viewt_%1.fbx.ini is newer than %CAR%\viewt.kn5,
+echo       so the game model needs re-saving in ksEditor:
+echo.
+echo         1. Open ksEditor - a fresh copy, as File ^> Open FBX adds to whatever is already loaded:
+echo              %KSEDITOR%\ksEditor.exe
+echo         2. File ^> Open FBX, and pick:
+echo              %CD%\source\viewt_%1.fbx
+echo            It loads the materials from viewt_%1.fbx.ini automatically.
+echo         3. File ^> Save KN5 ^> Car, and save over:
+echo              %CD%\%CAR%\viewt.kn5
+echo         4. Close ksEditor and come back here.
+echo.
+echo       Press any key once you've saved the kn5 to carry on with the build,
+echo       or close this window to stop.
+pause >nul
+call :kn5_stale %1
+if errorlevel 1 (
+  echo       WARNING: %CAR%\viewt.kn5 still looks out of date - carrying on with it anyway.
+) else (
+  echo       Got the new %CAR%\viewt.kn5.
+)
+exit /b 0
+
+rem Sets errorlevel 1 if source\viewt_%1.fbx or its .ini is newer than model %1's viewt.kn5, else 0
 :kn5_stale
-call :newer source\model.fbx mitsuoka_viewt\viewt.kn5
+call :car %1
+call :newer source\viewt_%1.fbx %CAR%\viewt.kn5
 if errorlevel 1 exit /b 1
-call :newer source\model.fbx.ini mitsuoka_viewt\viewt.kn5
+call :newer source\viewt_%1.fbx.ini %CAR%\viewt.kn5
 exit /b
+
+rem Gives car %1 the narrower tyre width (its model has the narrow tyres)
+:narrow_tyres
+powershell -NoProfile -Command "$f = '%1\data\tyres.ini'; (Get-Content $f) -replace '^WIDTH=.*', 'WIDTH=0.1778' | Set-Content $f"
+exit /b 0
+
+rem Mirrors the shared data over car %1, leaving alone the files named in the other arguments (and any
+rem robocopy options among them, such as /XD skins), then gives it the sound bank under its own name.
+rem Sets errorlevel 1 on failure.
+:mirror
+set "DEST=%~1"
+set "KEEP="
+set "OPTS="
+:mirror_args
+shift
+if "%~1"=="" goto mirror_run
+if "%~1"=="/XD" (
+  set "OPTS=%OPTS% /XD %~2"
+  shift
+) else (
+  set "KEEP=%KEEP% %~1"
+)
+goto mirror_args
+:mirror_run
+robocopy %DATA% %DEST% /MIR /XF *.bank GUIDs.txt data.acd%KEEP%%OPTS% /XJD /R:3 /W:5 /NDL /NJH /NJS /NP
+if errorlevel 8 (
+  echo       ERROR: Copying to %DEST% failed.
+  exit /b 1
+)
+del /q %DEST%\sfx\*.bank 2>nul
+copy /y %DATA%\sfx\%DATA%.bank %DEST%\sfx\%DEST%.bank >nul
+powershell -NoProfile -Command "(Get-Content %DATA%\sfx\GUIDs.txt) -replace '%DATA%', '%DEST%' | Set-Content %DEST%\sfx\GUIDs.txt"
+if errorlevel 1 (
+  echo       ERROR: Copying the sound bank to %DEST% failed.
+  exit /b 1
+)
+echo       %DEST% done.
+exit /b 0
 
 rem Sets errorlevel 1 if %1 is newer than %2 (or %2 doesn't exist), else 0
 :newer
