@@ -18,7 +18,7 @@ echo.
 
 rem 1. Export each source\viewt_<model>.blend to source\viewt_<model>.fbx, if the .blend has changed since the last export.
 rem    Set BLENDER to blender.exe to override; otherwise use the newest Blender in Dropbox\programs.
-echo [1/4] Exporting the Blender models to FBX
+echo [1/5] Exporting the Blender models to FBX
 for %%m in (%MODELS%) do (
   call :export %%m
   if errorlevel 1 goto fail
@@ -28,30 +28,38 @@ echo.
 rem 2. The kn5s have to be made in ksEditor by hand. If a car's FBX or its material settings (viewt_<model>.fbx.ini)
 rem    have changed since its viewt.kn5 was saved, say how, then wait so the new kn5 goes into the zip.
 rem    Set KSEDITOR to the folder with ksEditor.exe to override the Steam lookup.
-echo [2/4] Checking the game models (viewt.kn5) are up to date
+echo [2/5] Checking the game models (viewt.kn5) are up to date
 for %%m in (%MODELS%) do call :kn5 %%m
 echo.
 
-rem 3. Copy the shared data over the other cars, keeping each car's own files:
+rem 3. The skin previews are made in Content Manager by hand, from the finished kn5. Only the road car and the shared
+rem    lemons car (%DATA%) need them: step 4 copies %DATA%'s skins over the other two lemons cars.
+rem    If a preview is missing or older than its car's viewt.kn5, say how to remake them, then wait.
+echo [3/5] Checking the skin previews (preview.jpg) are up to date
+call :previews mitsuoka_viewt
+call :previews %DATA%
+echo.
+
+rem 4. Copy the shared data over the other cars, keeping each car's own files:
 rem      road car - its model, ui_car.json, skins (factory colours), mirrors.ini and digital_instruments.ini (no
-rem                 rear-view screen or temperature display in the road car); tyres.ini gets the narrower tyre width
-rem      2024     - its model, ui_car.json and upgrade.png; tyres.ini gets the narrower tyre width
+rem                 rear-view screen or temperature display in the road car); tyres.ini gets the 185/60R14 tyre
+rem      2024     - its model, ui_car.json and upgrade.png; tyres.ini gets the 185/60R14 tyre
 rem      2026     - its model, ui_car.json and upgrade.png, and the QG18 engine and gearbox
 rem    The sound bank is the same for all of them but has to be named after the car folder, so it's copied
 rem    under the right name and GUIDs.txt is rewritten to match.
-echo [3/4] Copying %DATA% over the other cars
+echo [4/5] Copying %DATA% over the other cars
 call :mirror mitsuoka_viewt viewt.kn5 ui_car.json upgrade.png mirrors.ini digital_instruments.ini /XD skins
 if errorlevel 1 goto fail
-call :narrow_tyres mitsuoka_viewt
+call :road_tyres mitsuoka_viewt
 call :mirror mitsuoka_viewt_lemons_2024 viewt.kn5 ui_car.json upgrade.png
 if errorlevel 1 goto fail
-call :narrow_tyres mitsuoka_viewt_lemons_2024
+call :road_tyres mitsuoka_viewt_lemons_2024
 call :mirror mitsuoka_viewt_lemons_2026 viewt.kn5 ui_car.json upgrade.png drivetrain.ini power.lut x.tuned
 if errorlevel 1 goto fail
 echo.
 
-rem 4. Zip all the cars as content\cars\... so the zip can be dropped on Content Manager or extracted into the AC folder
-echo [4/4] Creating the distribution zip
+rem 5. Zip all the cars as content\cars\... so the zip can be dropped on Content Manager or extracted into the AC folder
+echo [5/5] Creating the distribution zip
 for /f "usebackq delims=" %%v in (`powershell -NoProfile -Command "(Get-Content -Raw mitsuoka_viewt\ui\ui_car.json | ConvertFrom-Json).version"`) do set "VERSION=%%v"
 set "ZIP=dist\mitsuoka_viewt_%VERSION%.zip"
 echo       Version %VERSION% (from mitsuoka_viewt\ui\ui_car.json)
@@ -163,9 +171,46 @@ if errorlevel 1 exit /b 1
 call :newer source\viewt_%1.fbx.ini %CAR%\viewt.kn5
 exit /b
 
-rem Gives car %1 the narrower tyre width (its model has the narrow tyres)
-:narrow_tyres
-powershell -NoProfile -Command "$f = '%1\data\tyres.ini'; (Get-Content $f) -replace '^WIDTH=.*', 'WIDTH=0.1778' | Set-Content $f"
+rem If any of car folder %1's skin previews is out of date, shows how to remake them in Content Manager and waits
+:previews
+call :previews_stale %1
+if not errorlevel 1 (
+  echo       %1: every skin's preview.jpg is newer than viewt.kn5 - OK.
+  exit /b 0
+)
+echo       %1: a skin's preview.jpg is missing or older than %1\viewt.kn5,
+echo       so the previews need remaking in Content Manager:
+echo.
+echo         1. Open Content Manager and go to Cars ^> pick the car "%1".
+echo         2. Open its Skins tab and select all the skins.
+echo         3. Click "Update previews" (or open the Showroom and use Update preview for each skin),
+echo            and wait for it to finish.
+if /i "%1"=="%DATA%" echo         (The other two lemons cars get this car's previews when the data is copied.)
+echo         4. Close the dialog and come back here.
+echo.
+echo       Press any key once the previews are updated to carry on with the build,
+echo       or close this window to stop.
+pause >nul
+call :previews_stale %1
+if errorlevel 1 (
+  echo       WARNING: %1's previews still look out of date - carrying on with them anyway.
+) else (
+  echo       Got the new previews.
+)
+exit /b 0
+
+rem Sets errorlevel 1 if any skin of car folder %1 has no preview.jpg or one older than the car's viewt.kn5, else 0
+:previews_stale
+powershell -NoProfile -Command "$k = (Get-Item '%1\viewt.kn5').LastWriteTime; $p = @(Get-ChildItem '%1\skins' -Directory | ForEach-Object { Join-Path $_.FullName 'preview.jpg' }); if ($p | Where-Object { !(Test-Path $_) -or (Get-Item $_).LastWriteTime -lt $k }) { exit 1 } else { exit 0 }"
+exit /b
+
+rem Gives car %1 the tyre its model has: Vredestein Quatrac 5 185/60R14 (section width 0.185, 14" rim = rim radius 0.1778).
+rem RADIUS stays the shared 0.288: 185/60R14 comes to 0.2888 and 195/50R15 to 0.288, so both fit the one value.
+rem It's an all-season tyre, so it grips less than the Ventus R-S4: DY0/DX0 (peak lateral/longitudinal grip) drop from
+rem 1.3053/1.3142 to 1.10/1.11, and the softer 60-series carcass peaks at a bigger slip angle (FRICTION_LIMIT_ANGLE 7.52 to 8.5).
+rem The temperature curve is already broad, so thermals are left alone.
+:road_tyres
+powershell -NoProfile -Command "$f = '%1\data\tyres.ini'; (Get-Content $f) -replace '^NAME=.*', 'NAME=Vredestein Quatrac 5' -replace '^WIDTH=.*', 'WIDTH=0.185' -replace '^RIM_RADIUS=.*', 'RIM_RADIUS=0.1778' -replace '^DY0=.*', 'DY0=1.10' -replace '^DX0=.*', 'DX0=1.11' -replace '^FRICTION_LIMIT_ANGLE=.*', 'FRICTION_LIMIT_ANGLE=8.5' | Set-Content $f"
 exit /b 0
 
 rem Mirrors the shared data over car %1, leaving alone the files named in the other arguments (and any
