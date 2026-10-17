@@ -7,12 +7,12 @@ There are four cars in this repo. In Content Manager the three race cars are lis
 
 | Car folder | Name in game | Model | What it is |
 | --- | --- | --- | --- |
-| `mitsuoka_viewt` | Mitsuoka Viewt | `source/viewt_base.blend` | The road car, in six factory colours (skins). Made from the 2024 model with the roll cage, race stickers, window decals and race kit removed and plain paint. Physics as the 2024 car. |
+| `mitsuoka_viewt` | Mitsuoka Viewt | `source/viewt_base.blend` | The road car, in six factory colours (skins). Made from the 2024 model with the roll cage, race stickers, window decals and race kit removed, plain paint and a factory interior (cream leather seats front and rear, burl wood dash and centre stack, carpet, pleated door cards and headliner). Physics as the 2024 car. |
 | `mitsuoka_viewt_lemons_2024` | Mitsuoka Viewt Lemons 2024 | `source/viewt_2024.blend` | Narrow tyres; no Humphris Rallysport sticker |
 | `mitsuoka_viewt_lemons_2025` | Mitsuoka Viewt Lemons 2025 | `source/viewt_2025.blend` | 195/50R15 tyres modelled at full width. Holds the shared data (see below). |
 | `mitsuoka_viewt_lemons_2026` | Mitsuoka Viewt Lemons 2026 | `source/viewt_2026.blend` | As 2025, with the QG18 engine and 5-speed gearbox |
 
-Some cars use their own copies of textures, named after the model: `source/texture/CarpaintExterior_*_2024.png` (2024, without the Humphris sticker) and `source/texture/*_base.png` (road car: plain paint and clean glass).
+Some cars use their own copies of textures, named after the model: `source/texture/CarpaintExterior_*_2024.png` (2024, without the Humphris sticker) and `source/texture/*_base.png` (road car: plain paint and clean glass). The road car's interior has its own textures too: `burlwood_`, `carpet_`, `leather_cream_`, `doorcard_`, `headliner_`, `dashplastic_` and `dashstack_base_color.png` (the centre stack face is painted in one piece: vents, switches, radio, climate dials and A/C slider).
 
 The road car's paint colours are skins in `mitsuoka_viewt/skins/`. Each one is a copy of `CarpaintExterior_Base_color_base.png` with the body painted in that colour, which replaces the texture of the same name in the kn5. The colours are the K11 Viewt's late-production palette: Black Metallic, Ivory White, Organic Green, Maroon Metallic, Light Silver and Stylish Blue.
 
@@ -40,7 +40,7 @@ The only exceptions are the files that are specific to each car, which the build
 
 - All cars: `viewt.kn5` (the model - see below) and `ui/ui_car.json` (name, description and specs)
 - Race cars: `ui/upgrade.png` (the icon Content Manager shows for a car listed under another)
-- Road car: `skins/` (the factory colours)
+- Road car: `skins/` (the factory colours), and `data/mirrors.ini` and `data/digital_instruments.ini` (it has no rear-view camera screen or temperature display, so `mirrors.ini` leaves out `REAR_VIEW_DISPLAY` and there is no `digital_instruments.ini`)
 - 2026: `data/drivetrain.ini` and `data/power.lut` (engine and gearbox), and `x.tuned`
 
 The build also makes these, so don't edit them in the other cars:

@@ -33,13 +33,14 @@ for %%m in (%MODELS%) do call :kn5 %%m
 echo.
 
 rem 3. Copy the shared data over the other cars, keeping each car's own files:
-rem      road car - its model, ui_car.json and skins (factory colours); tyres.ini gets the narrower tyre width
+rem      road car - its model, ui_car.json, skins (factory colours), mirrors.ini and digital_instruments.ini (no
+rem                 rear-view screen or temperature display in the road car); tyres.ini gets the narrower tyre width
 rem      2024     - its model, ui_car.json and upgrade.png; tyres.ini gets the narrower tyre width
 rem      2026     - its model, ui_car.json and upgrade.png, and the QG18 engine and gearbox
 rem    The sound bank is the same for all of them but has to be named after the car folder, so it's copied
 rem    under the right name and GUIDs.txt is rewritten to match.
 echo [3/4] Copying %DATA% over the other cars
-call :mirror mitsuoka_viewt viewt.kn5 ui_car.json upgrade.png /XD skins
+call :mirror mitsuoka_viewt viewt.kn5 ui_car.json upgrade.png mirrors.ini digital_instruments.ini /XD skins
 if errorlevel 1 goto fail
 call :narrow_tyres mitsuoka_viewt
 call :mirror mitsuoka_viewt_lemons_2024 viewt.kn5 ui_car.json upgrade.png
