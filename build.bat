@@ -44,7 +44,7 @@ rem 4. Copy the shared data over the other cars, keeping each car's own files:
 rem      road car - its model, ui_car.json, skins (factory colours), mirrors.ini and digital_instruments.ini (no
 rem                 rear-view screen or temperature display in the road car), suspensions.ini (stock, as the 2023 car); tyres.ini gets the 185/60R14 tyre
 rem      2023     - its model, ui_car.json, upgrade.png and suspensions.ini (stock springs, dampers and sway bar); tyres.ini gets the 185/60R14 tyre
-rem      2026     - its model, ui_car.json and upgrade.png, and the QG18 engine and gearbox
+rem      2026     - its model, ui_car.json and upgrade.png, the QG18 engine and gearbox, and digital_instruments.ini (no E/T temperature display)
 rem    The sound bank is the same for all of them but has to be named after the car folder, so it's copied
 rem    under the right name and GUIDs.txt is rewritten to match.
 echo [4/5] Copying %DATA% over the other cars
@@ -54,7 +54,7 @@ call :road_tyres mitsuoka_viewt
 call :mirror mitsuoka_viewt_lemons_2023 viewt.kn5 ui_car.json upgrade.png suspensions.ini
 if errorlevel 1 goto fail
 call :road_tyres mitsuoka_viewt_lemons_2023
-call :mirror mitsuoka_viewt_lemons_2026 viewt.kn5 ui_car.json upgrade.png drivetrain.ini power.lut x.tuned
+call :mirror mitsuoka_viewt_lemons_2026 viewt.kn5 ui_car.json upgrade.png drivetrain.ini power.lut digital_instruments.ini x.tuned
 if errorlevel 1 goto fail
 echo.
 
