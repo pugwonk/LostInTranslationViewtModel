@@ -32,29 +32,28 @@ echo [2/5] Checking the game models (viewt.kn5) are up to date
 for %%m in (%MODELS%) do call :kn5 %%m
 echo.
 
-rem 3. The skin previews are made in Content Manager by hand, from the finished kn5. Only the road car and the shared
-rem    lemons car (%DATA%) need them: step 4 copies %DATA%'s skins over the other two lemons cars.
+rem 3. The skin previews are made in Content Manager by hand, from the finished kn5. Every car needs its own, as each
+rem    has its own model (step 4 leaves the lemons cars' preview.jpg alone when it copies %DATA%'s skins over them).
 rem    If a preview is missing or older than its car's viewt.kn5, say how to remake them, then wait.
 echo [3/5] Checking the skin previews (preview.jpg) are up to date
-call :previews mitsuoka_viewt
-call :previews %DATA%
+for %%m in (%MODELS%) do call :previews_model %%m
 echo.
 
 rem 4. Copy the shared data over the other cars, keeping each car's own files:
 rem      road car - its model, ui_car.json, skins (factory colours), mirrors.ini and digital_instruments.ini (no
 rem                 rear-view screen or temperature display in the road car), suspensions.ini (stock, as the 2023 car); tyres.ini gets the 185/60R14 tyre
-rem      2023     - its model, ui_car.json, upgrade.png and suspensions.ini (stock springs, dampers and sway bar); tyres.ini gets the 185/60R14 tyre
-rem      2026     - its model, ui_car.json and upgrade.png, the QG18 engine and gearbox, and digital_instruments.ini (no E/T temperature display)
+rem      2023     - its model, ui_car.json, upgrade.png, preview.jpg and suspensions.ini (stock springs, dampers and sway bar); tyres.ini gets the 185/60R14 tyre
+rem      2026     - its model, ui_car.json, upgrade.png and preview.jpg, the QG18 engine and gearbox, and digital_instruments.ini (no E/T temperature display)
 rem    The sound bank is the same for all of them but has to be named after the car folder, so it's copied
 rem    under the right name and GUIDs.txt is rewritten to match.
 echo [4/5] Copying %DATA% over the other cars
 call :mirror mitsuoka_viewt viewt.kn5 ui_car.json upgrade.png suspensions.ini mirrors.ini digital_instruments.ini /XD skins
 if errorlevel 1 goto fail
 call :road_tyres mitsuoka_viewt
-call :mirror mitsuoka_viewt_lemons_2023 viewt.kn5 ui_car.json upgrade.png suspensions.ini
+call :mirror mitsuoka_viewt_lemons_2023 viewt.kn5 ui_car.json upgrade.png preview.jpg suspensions.ini
 if errorlevel 1 goto fail
 call :road_tyres mitsuoka_viewt_lemons_2023
-call :mirror mitsuoka_viewt_lemons_2026 viewt.kn5 ui_car.json upgrade.png drivetrain.ini power.lut digital_instruments.ini x.tuned
+call :mirror mitsuoka_viewt_lemons_2026 viewt.kn5 ui_car.json upgrade.png preview.jpg drivetrain.ini power.lut digital_instruments.ini x.tuned
 if errorlevel 1 goto fail
 echo.
 
@@ -171,6 +170,12 @@ if errorlevel 1 exit /b 1
 call :newer source\viewt_%1.fbx.ini %CAR%\viewt.kn5
 exit /b
 
+rem Checks the skin previews of the car for model %1
+:previews_model
+call :car %1
+call :previews %CAR%
+exit /b 0
+
 rem If any of car folder %1's skin previews is out of date, shows how to remake them in Content Manager and waits
 :previews
 call :previews_stale %1
@@ -184,8 +189,8 @@ echo.
 echo         1. Open Content Manager and go to Cars ^> pick the car "%1".
 echo         2. Open its Skins tab and select all the skins.
 echo         3. Click "Update previews" (or open the Showroom and use Update preview for each skin),
-echo            and wait for it to finish.
-if /i "%1"=="%DATA%" echo         (The other two lemons cars get this car's previews when the data is copied.)
+echo            and wait for it to finish. If the car comes out bigger or smaller than the other cars' previews,
+echo            open Update previews ^> Options and pick the plain Kunos preset first (a moved camera shows in italics).
 echo         4. Close the dialog and come back here.
 echo.
 echo       Press any key once the previews are updated to carry on with the build,
