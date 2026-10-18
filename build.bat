@@ -4,12 +4,12 @@ cd /d "%~dp0"
 
 rem There are four cars, each with its own model (source\viewt_<model>.blend):
 rem   mitsuoka_viewt             - model "base": the road car in its factory colours
-rem   mitsuoka_viewt_lemons_2024 - model "2024", listed under the road car in Content Manager
-rem   mitsuoka_viewt_lemons_2025 - model "2025", ditto
+rem   mitsuoka_viewt_lemons_2023 - model "2023", listed under the road car in Content Manager
+rem   mitsuoka_viewt_lemons_2024 - model "2024", ditto
 rem   mitsuoka_viewt_lemons_2026 - model "2026", ditto
-rem mitsuoka_viewt_lemons_2025 holds the shared data: everything except each car's own files is copied from it in step 3.
-set "MODELS=base 2024 2025 2026"
-set "DATA=mitsuoka_viewt_lemons_2025"
+rem mitsuoka_viewt_lemons_2024 holds the shared data: everything except each car's own files is copied from it in step 3.
+set "MODELS=base 2023 2024 2026"
+set "DATA=mitsuoka_viewt_lemons_2024"
 
 echo ============================================================
 echo  Mitsuoka Viewt build
@@ -42,18 +42,18 @@ echo.
 
 rem 4. Copy the shared data over the other cars, keeping each car's own files:
 rem      road car - its model, ui_car.json, skins (factory colours), mirrors.ini and digital_instruments.ini (no
-rem                 rear-view screen or temperature display in the road car); tyres.ini gets the 185/60R14 tyre
-rem      2024     - its model, ui_car.json and upgrade.png; tyres.ini gets the 185/60R14 tyre
+rem                 rear-view screen or temperature display in the road car), suspensions.ini (stock, as the 2023 car); tyres.ini gets the 185/60R14 tyre
+rem      2023     - its model, ui_car.json, upgrade.png and suspensions.ini (stock springs, dampers and sway bar); tyres.ini gets the 185/60R14 tyre
 rem      2026     - its model, ui_car.json and upgrade.png, and the QG18 engine and gearbox
 rem    The sound bank is the same for all of them but has to be named after the car folder, so it's copied
 rem    under the right name and GUIDs.txt is rewritten to match.
 echo [4/5] Copying %DATA% over the other cars
-call :mirror mitsuoka_viewt viewt.kn5 ui_car.json upgrade.png mirrors.ini digital_instruments.ini /XD skins
+call :mirror mitsuoka_viewt viewt.kn5 ui_car.json upgrade.png suspensions.ini mirrors.ini digital_instruments.ini /XD skins
 if errorlevel 1 goto fail
 call :road_tyres mitsuoka_viewt
-call :mirror mitsuoka_viewt_lemons_2024 viewt.kn5 ui_car.json upgrade.png
+call :mirror mitsuoka_viewt_lemons_2023 viewt.kn5 ui_car.json upgrade.png suspensions.ini
 if errorlevel 1 goto fail
-call :road_tyres mitsuoka_viewt_lemons_2024
+call :road_tyres mitsuoka_viewt_lemons_2023
 call :mirror mitsuoka_viewt_lemons_2026 viewt.kn5 ui_car.json upgrade.png drivetrain.ini power.lut x.tuned
 if errorlevel 1 goto fail
 echo.
