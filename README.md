@@ -108,4 +108,4 @@ The per-object sections in each .ini are keyed by the FBX file name (`[model_FBX
 
 ## License
 
-Released under the [MIT License](LICENSE). You can use, modify and redistribute this however you like, including as the starting point for your own mods, as long as you keep the copyright notice (credit to the original authors, Chris Rae and Tyler Stank) with it.
+Released under the [MIT License](LICENSE). You can use, modify and redistribute this however you like, including as the starting point for your own mods, as long as you keep the copyright notice (credit to the original author, Chris Rae) with it.
