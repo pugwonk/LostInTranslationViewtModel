@@ -44,7 +44,8 @@ rem      road car - its model, ui_car.json, upgrade.png (it has no parent, so no
 rem                 rear-view screen or temperature display in the road car), suspensions.ini (stock, as the 2023 car); tyres.ini gets the 185/60R14 tyre
 rem      2023     - its model, ui_car.json, upgrade.png (STD), preview.jpg and suspensions.ini (stock springs, dampers and sway bar); tyres.ini gets the 185/60R14 tyre;
 rem                 no extension (it has no rear-view screen, so nothing for the screen's camera to draw on)
-rem      2026     - its model, ui_car.json, upgrade.png (S2) and preview.jpg, the QG18 engine and gearbox, and digital_instruments.ini (no E/T temperature display)
+rem      2026     - its model, ui_car.json, upgrade.png (S2) and preview.jpg, the QG18 engine and gearbox, digital_instruments.ini (no E/T temperature display) and
+rem                 animations\shift.ksanim (the left hand holds the H-pattern gear knob; the other cars' animation works the old sequential lever)
 rem      The 2024 car's own upgrade.png (S1) is the shared one, so only 2023 and 2026 need to keep theirs.
 rem    The sound bank is the same for all of them but has to be named after the car folder, so it's copied
 rem    under the right name and GUIDs.txt is rewritten to match.
@@ -55,7 +56,7 @@ call :road_tyres mitsuoka_viewt
 call :mirror mitsuoka_viewt_lemons_2023 viewt.kn5 ui_car.json upgrade.png preview.jpg suspensions.ini /XD extension
 if errorlevel 1 goto fail
 call :road_tyres mitsuoka_viewt_lemons_2023
-call :mirror mitsuoka_viewt_lemons_2026 viewt.kn5 ui_car.json upgrade.png preview.jpg drivetrain.ini power.lut digital_instruments.ini x.tuned
+call :mirror mitsuoka_viewt_lemons_2026 viewt.kn5 ui_car.json upgrade.png preview.jpg drivetrain.ini power.lut digital_instruments.ini x.tuned shift.ksanim
 if errorlevel 1 goto fail
 echo.
 
