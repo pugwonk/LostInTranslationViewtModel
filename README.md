@@ -1,4 +1,4 @@
-# LostInTranslationViewtModel
+# Mitsuoka Viewt 1.0 for Assetto Corsa
 The world's slowest race car, now available as a rolling roadblock in Assetto Corsa
 
 ## Previews
@@ -70,7 +70,8 @@ The only exceptions are the files that are specific to each car, which the build
 
 - Road car and 2023: `data/suspensions.ini` (stock springs, dampers and sway bar; the 2024 file has the race upgrades, which 2026 shares)
 - All cars: `viewt.kn5` (the model - see below) and `ui/ui_car.json` (name, description and specs)
-- Road car: `ui/upgrade.png` (the 64x64 icon Content Manager wants for a car listed under another; the race cars share a copy of the Lost in Translation skin's `livery.png` so that roundel is their badge in Content Manager's car dropdown, and the road car has none, so Content Manager gives it its own "STD" badge), `skins/` (the factory colours), and `data/mirrors.ini` and `data/digital_instruments.ini` (it has no rear-view camera screen or temperature display, so `mirrors.ini` leaves out `REAR_VIEW_DISPLAY` and there is no `digital_instruments.ini`; for the same reason it has no `extension/`, which only holds the screen's camera)
+- Race cars: `ui/upgrade.png`, the 64x64 icon Content Manager's car dropdown shows for a car listed under another. Each race car has its own, drawn in the style of Content Manager's built-in "STD" badge (a white ring round a small orange and red gauge, with the tier under it): 2023 is "STD", 2024 is "S1" and 2026 is "S2" (the 2023 and 2026 files are kept by the build, so only 2024's is the shared copy). The road car has none, so Content Manager gives it its own "STD" badge. Content Manager only reads these when it starts, so restart it after changing one
+- Road car: `skins/` (the factory colours), and `data/mirrors.ini` and `data/digital_instruments.ini` (it has no rear-view camera screen or temperature display, so `mirrors.ini` leaves out `REAR_VIEW_DISPLAY` and there is no `digital_instruments.ini`; for the same reason it has no `extension/`, which only holds the screen's camera)
 - 2026: `data/drivetrain.ini` and `data/power.lut` (engine and gearbox), and `x.tuned`
 
 The build also makes these, so don't edit them in the other cars:
