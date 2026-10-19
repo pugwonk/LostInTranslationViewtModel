@@ -70,7 +70,7 @@ The only exceptions are the files that are specific to each car, which the build
 
 - Road car and 2023: `data/suspensions.ini` (stock springs, dampers and sway bar; the 2024 file has the race upgrades, which 2026 shares)
 - All cars: `viewt.kn5` (the model - see below) and `ui/ui_car.json` (name, description and specs)
-- Road car: `ui/upgrade.png` (the 64x64 icon Content Manager wants for a car listed under another; the race cars share a fully transparent one so no badge shows, and the road car has none), `skins/` (the factory colours), and `data/mirrors.ini` and `data/digital_instruments.ini` (it has no rear-view camera screen or temperature display, so `mirrors.ini` leaves out `REAR_VIEW_DISPLAY` and there is no `digital_instruments.ini`; for the same reason it has no `extension/`, which only holds the screen's camera)
+- Road car: `ui/upgrade.png` (the 64x64 icon Content Manager wants for a car listed under another; the race cars share a copy of the Lost in Translation skin's `livery.png` so that roundel is their badge in Content Manager's car dropdown, and the road car has none, so Content Manager gives it its own "STD" badge), `skins/` (the factory colours), and `data/mirrors.ini` and `data/digital_instruments.ini` (it has no rear-view camera screen or temperature display, so `mirrors.ini` leaves out `REAR_VIEW_DISPLAY` and there is no `digital_instruments.ini`; for the same reason it has no `extension/`, which only holds the screen's camera)
 - 2026: `data/drivetrain.ini` and `data/power.lut` (engine and gearbox), and `x.tuned`
 
 The build also makes these, so don't edit them in the other cars:
