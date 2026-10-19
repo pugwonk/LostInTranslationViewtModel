@@ -41,8 +41,7 @@ The only exceptions are the files that are specific to each car, which the build
 
 - Road car and 2023: `data/suspensions.ini` (stock springs, dampers and sway bar; the 2024 file has the race upgrades, which 2026 shares)
 - All cars: `viewt.kn5` (the model - see below) and `ui/ui_car.json` (name, description and specs)
-- Race cars: `ui/upgrade.png` (the icon Content Manager shows for a car listed under another)
-- Road car: `skins/` (the factory colours), and `data/mirrors.ini` and `data/digital_instruments.ini` (it has no rear-view camera screen or temperature display, so `mirrors.ini` leaves out `REAR_VIEW_DISPLAY` and there is no `digital_instruments.ini`)
+- Road car: `ui/upgrade.png` (the 64x64 icon Content Manager wants for a car listed under another; the race cars share a fully transparent one so no badge shows, and the road car has none), `skins/` (the factory colours), and `data/mirrors.ini` and `data/digital_instruments.ini` (it has no rear-view camera screen or temperature display, so `mirrors.ini` leaves out `REAR_VIEW_DISPLAY` and there is no `digital_instruments.ini`; for the same reason it has no `extension/`, which only holds the screen's camera)
 - 2026: `data/drivetrain.ini` and `data/power.lut` (engine and gearbox), and `x.tuned`
 
 The build also makes these, so don't edit them in the other cars:
@@ -51,6 +50,16 @@ The build also makes these, so don't edit them in the other cars:
 - `sfx/GUIDs.txt` and `sfx/<car folder>.bank` - the sound bank is the same for all the cars, but has to be named after the car folder, so the build copies it under the right name and rewrites `GUIDs.txt` to match
 
 If you add another file that should differ between the cars, add it to that car's `call :mirror` line in `build.bat`.
+
+## The driver and the steering wheel
+
+The model has no driver (the build leaves out the `DRIVER:` objects); AC supplies its own and positions it from three files: `driver_base_pos.knh` (its skeleton), `animations/steer.ksanim` (its arms follow the wheel through 100 frames, frame 50 being straight ahead) and `animations/shift.ksanim` (the left arm going to the gear lever). The skeleton's root bone, `DRIVER:DRIVER`, is what places the driver in the car, in the same coordinates as the kn5 (y up, z forward; the driver sits at negative x). The wheel is centred on x -0.329, y 0.8485, z 0.459 (the `STEER_HR` empty in the .blend), with a rim 0.169 m in outer radius.
+
+To move the driver, add the same offset to that root bone's translation in the .knh and in every frame of `steer.ksanim` (a frame is 10 floats: rotation quaternion, position, scale); `shift.ksanim` has an identity root and only animates the arm, so it moves with the rest. The 2024 car's files are the ones to edit; the build copies them over the others. `DRIVEREYES` in `car.ini` is in the same coordinates, so move it with the head. The driver was last moved on 2026-10-18 by x +0.017 and y +0.05 (and `DRIVEREYES` x from -0.36 to -0.335): the circle the hands follow was centred about 2 cm to one side of and 5 cm below the wheel's centre, so one hand missed the rim and both drifted off it as the wheel turned.
+
+## The rear-view screen
+
+The dash screen is the `REAR_VIEW_DISPLAY` mesh, and it is left out of `data/mirrors.ini` on purpose: AC draws a mirror's picture over a mirror mesh, which would hide the camera. With Custom Shaders Patch (CSP), `extension/ext_config.ini` puts a real camera on the roof, where `CAMERA_5` in `data/cameras.ini` is, looking back (`[RENDERING_CAMERA_0]`, 150 degrees), squeezes its very wide picture through a fisheye pass (`[TEXTURE_PREPROCESSING_0]`) and `extension/rear_camera.lua` draws the result on the screen through a `[SCRIPTABLE_DISPLAY_0]`. Without CSP the screen is just black. For this to work the mesh's UVs cover the whole 0 to 1 square (they used to be a tiny patch of the shared texture), upright and unmirrored as seen from the driver's seat; the 2023, 2024 and 2026 models have this, the road car has no screen. Positions in `ext_config.ini` are in the model's coordinates, which are the physics ones in `cameras.ini` minus `GRAPHICS_OFFSET` from `car.ini`, so move the camera by the same amount if `GRAPHICS_OFFSET` changes. The picture is a mirror image, like a backup camera's; set `MIRROR_IMAGE` to `false` at the top of the Lua script to turn that off.
 
 ## Updating the 3D models
 
