@@ -1,6 +1,35 @@
 # LostInTranslationViewtModel
 The world's slowest race car, now available as a rolling roadblock in Assetto Corsa
 
+## Previews
+
+The road car, in its six factory colours:
+
+<table>
+<tr>
+<td align="center"><img src="mitsuoka_viewt/skins/cream_ivory/preview.jpg" width="300" alt="Cream Ivory"><br>Cream Ivory</td>
+<td align="center"><img src="mitsuoka_viewt/skins/silver/preview.jpg" width="300" alt="Silver"><br>Silver</td>
+<td align="center"><img src="mitsuoka_viewt/skins/burgundy/preview.jpg" width="300" alt="Burgundy"><br>Burgundy</td>
+</tr>
+<tr>
+<td align="center"><img src="mitsuoka_viewt/skins/bottle_green/preview.jpg" width="300" alt="Bottle Green"><br>Bottle Green</td>
+<td align="center"><img src="mitsuoka_viewt/skins/slate_blue/preview.jpg" width="300" alt="Slate Blue"><br>Slate Blue</td>
+<td align="center"><img src="mitsuoka_viewt/skins/pale_blue/preview.jpg" width="300" alt="Pale Blue"><br>Pale Blue</td>
+</tr>
+</table>
+
+The three race cars, all in the Lost in Translation livery:
+
+<table>
+<tr>
+<td align="center"><img src="mitsuoka_viewt_lemons_2023/skins/lost_in_translation/preview.jpg" width="300" alt="Mitsuoka Viewt Lemons 2023"><br>Lemons 2023</td>
+<td align="center"><img src="mitsuoka_viewt_lemons_2024/skins/lost_in_translation/preview.jpg" width="300" alt="Mitsuoka Viewt Lemons 2024"><br>Lemons 2024</td>
+<td align="center"><img src="mitsuoka_viewt_lemons_2026/skins/lost_in_translation/preview.jpg" width="300" alt="Mitsuoka Viewt Lemons 2026"><br>Lemons 2026</td>
+</tr>
+</table>
+
+These are the Content Manager showroom previews, each skin's `preview.jpg`. They're remade in Content Manager whenever a car's kn5 changes (see Building), so commit them with the model.
+
 ## The cars
 
 There are four cars in this repo. In Content Manager the three race cars are listed under the road car (their `ui_car.json` has `"parent": "mitsuoka_viewt"`). Each car has its own 3D model:
