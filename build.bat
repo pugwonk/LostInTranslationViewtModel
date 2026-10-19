@@ -40,10 +40,10 @@ for %%m in (%MODELS%) do call :previews_model %%m
 echo.
 
 rem 4. Copy the shared data over the other cars, keeping each car's own files:
-rem      road car - its model, ui_car.json, upgrade.png (it has no parent, so no icon), skins (factory colours), extension (rear-view screen FOV), mirrors.ini and digital_instruments.ini (no
+rem      road car - its model, ui_car.json, upgrade.png (it has no parent, so no icon), skins (factory colours), extension (its own ext_config.ini with just the clock; clock.lua is copied in, see :clock_script), mirrors.ini and digital_instruments.ini (no
 rem                 rear-view screen or temperature display in the road car), suspensions.ini (stock, as the 2023 car); tyres.ini gets the 185/60R14 tyre
 rem      2023     - its model, ui_car.json, upgrade.png (STD), preview.jpg and suspensions.ini (stock springs, dampers and sway bar); tyres.ini gets the 185/60R14 tyre;
-rem                 no extension (it has no rear-view screen, so nothing for the screen's camera to draw on)
+rem                 extension (its own ext_config.ini with just the clock, as it has no rear-view screen for the camera to draw on; clock.lua is copied in, see :clock_script)
 rem      2026     - its model, ui_car.json, upgrade.png (S2) and preview.jpg, the QG18 engine and gearbox, digital_instruments.ini (no E/T temperature display) and
 rem                 animations\shift.ksanim (the left hand holds the H-pattern gear knob; the other cars' animation works the old sequential lever)
 rem      The 2024 car's own upgrade.png (S1) is the shared one, so only 2023 and 2026 need to keep theirs.
@@ -53,9 +53,13 @@ echo [4/5] Copying %DATA% over the other cars
 call :mirror mitsuoka_viewt viewt.kn5 ui_car.json upgrade.png suspensions.ini mirrors.ini digital_instruments.ini /XD "skins extension"
 if errorlevel 1 goto fail
 call :road_tyres mitsuoka_viewt
+call :clock_script mitsuoka_viewt
+if errorlevel 1 goto fail
 call :mirror mitsuoka_viewt_lemons_2023 viewt.kn5 ui_car.json upgrade.png preview.jpg suspensions.ini /XD extension
 if errorlevel 1 goto fail
 call :road_tyres mitsuoka_viewt_lemons_2023
+call :clock_script mitsuoka_viewt_lemons_2023
+if errorlevel 1 goto fail
 call :mirror mitsuoka_viewt_lemons_2026 viewt.kn5 ui_car.json upgrade.png preview.jpg drivetrain.ini power.lut digital_instruments.ini x.tuned shift.ksanim
 if errorlevel 1 goto fail
 echo.
@@ -219,6 +223,18 @@ rem 1.3053/1.3142 to 1.10/1.11, and the softer 60-series carcass peaks at a bigg
 rem The temperature curve is already broad, so thermals are left alone.
 :road_tyres
 powershell -NoProfile -Command "$f = '%1\data\tyres.ini'; (Get-Content $f) -replace '^NAME=.*', 'NAME=Vredestein Quatrac 5' -replace '^WIDTH=.*', 'WIDTH=0.185' -replace '^RIM_RADIUS=.*', 'RIM_RADIUS=0.1778' -replace '^DY0=.*', 'DY0=1.10' -replace '^DX0=.*', 'DX0=1.11' -replace '^FRICTION_LIMIT_ANGLE=.*', 'FRICTION_LIMIT_ANGLE=8.5' | Set-Content $f"
+exit /b 0
+
+rem Gives car %1 the dash clock's script. The cars without the rear-view screen keep their own extension\ext_config.ini (just the
+rem clock), so the mirror leaves extension alone and the shared clock.lua is copied over from %DATA% here instead.
+rem Sets errorlevel 1 on failure.
+:clock_script
+if not exist %1\extension mkdir %1\extension
+copy /y %DATA%\extension\clock.lua %1\extension\clock.lua >nul
+if errorlevel 1 (
+  echo       ERROR: Copying clock.lua to %1 failed.
+  exit /b 1
+)
 exit /b 0
 
 rem Mirrors the shared data over car %1, leaving alone the files named in the other arguments (and any
