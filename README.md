@@ -105,3 +105,7 @@ Each car's model goes `source/viewt_<model>.blend` → `source/viewt_<model>.fbx
 Material and per-object settings (shaders, textures, transparency, shadows, LODs) live in `source/viewt_<model>.fbx.ini`, not in the .blend - again one per car. To change them, open `source/viewt_<model>.fbx` in ksEditor (`assettocorsa\sdk\editor\ksEditor.exe`), which loads the .ini automatically. Make your changes, save them with File > Save Persistence over `source/viewt_<model>.fbx.ini`, then run `build.bat`. Commit the .ini along with the model.
 
 The per-object sections in each .ini are keyed by the FBX file name (`[model_FBX: viewt_2023.fbx_...]`). If an FBX is ever renamed, rename those keys to match, or ksEditor will silently drop the per-object settings. Materials still load, because they're keyed by material name. To copy material changes from one car's .ini to another, copy the file and replace `viewt_<model>.fbx` with the other car's FBX name throughout.
+
+## License
+
+Released under the [MIT License](LICENSE). You can use, modify and redistribute this however you like, including as the starting point for your own mods, as long as you keep the copyright notice (credit to the original authors, Chris Rae and Tyler Stank) with it.
