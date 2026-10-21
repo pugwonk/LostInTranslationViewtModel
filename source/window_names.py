@@ -27,7 +27,7 @@ previews, whose paths it prints.
 
 import glob, json, os, subprocess, sys, tempfile
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 # ---- The names, as on the car. Top to bottom. --------------------------------------------
 
@@ -54,16 +54,20 @@ JP_LIGHT = ['フィニアン・ベイリー', 'ステフ・シュレイダー', 
 
 # ---- Layout, as fractions of the main glass's visible width (W) and height (H) ------------
 # glyph: height of the probe glyph; top: the first line's glyph top below the frame;
-# margin: from the front edge (edge='front') or the bar (edge='rear'); pitch: line spacing.
+# margin: from the front edge (edge='front') or the bar (edge='rear'); pitch: line spacing;
+# weight: extra stroke added round each glyph, per side (a dilation, so keep it small on fonts that are
+# already bold or their counters fill in). The real lettering is thinner and smaller than this, but at the
+# texture's resolution (about 1 texel per mm) that came out faint, so the lettering is drawn bigger and
+# heavier, about as heavy as the 2024 block.
 FONTS = os.path.join(os.environ.get('WINDIR', r'C:\Windows'), 'Fonts')
 LAYOUT = {
     'R': [  # right rear door: English
-        dict(names=EN_CAPS, font='COPRGTB.TTF', probe='H', glyph=0.024, edge='front', margin=0.05, top=0.115, pitch=0.040),
-        dict(names=EN_SERIF, font='CENTURY.TTF', probe='H', glyph=0.028, edge='rear', margin=0.045, top=0.05, pitch=0.041),
+        dict(names=EN_CAPS, font='COPRGTB.TTF', probe='H', glyph=0.031, edge='front', margin=0.04, top=0.06, pitch=0.0425, weight=0.002),
+        dict(names=EN_SERIF, font='CENTURY.TTF', probe='H', glyph=0.034, edge='rear', margin=0.04, top=0.05, pitch=0.048, weight=0.0015),
     ],
     'L': [  # left rear door: katakana
-        dict(names=JP_BOLD, font='YuGothB.ttc', probe='ア', glyph=0.035, edge='front', margin=0.04, top=0.042, pitch=0.0445),
-        dict(names=JP_LIGHT, font='YuGothM.ttc', probe='ア', glyph=0.038, edge='rear', margin=0.04, top=0.042, pitch=0.055),
+        dict(names=JP_BOLD, font='YuGothB.ttc', probe='ア', glyph=0.036, edge='front', margin=0.03, top=0.035, pitch=0.0445, weight=0.001),
+        dict(names=JP_LIGHT, font='YuGothM.ttc', probe='ア', glyph=0.040, edge='rear', margin=0.03, top=0.03, pitch=0.055, weight=0.002),
     ],
 }
 
@@ -167,7 +171,6 @@ def side_frames(work, side):
 def canvas_for(work, side):
     """The names drawn in a world-space canvas as seen from outside the car."""
     img = Image.new('L', (int((Y1 - Y0) * PPM), int((Z1 - Z0) * PPM)), 0)
-    dr = ImageDraw.Draw(img)
     main, _ = side_frames(work, side)
     Hm, Wm = (main['z1'] - main['z0']) * PPM, (main['y1'] - main['y0']) * PPM
     cx = (lambda y: (y - Y0) * PPM) if side == 'L' else (lambda y: (Y1 - y) * PPM)
@@ -181,7 +184,12 @@ def canvas_for(work, side):
             x, align = front + inward * col['margin'] * Wm, 'left' if inward > 0 else 'right'
         else:
             x, align = rear - inward * col['margin'] * Wm, 'right' if inward > 0 else 'left'
-        draw_column(dr, col['names'], f, x, top + col['top'] * Hm, col['pitch'] * Hm, align, col['probe'])
+        layer = Image.new('L', img.size, 0)
+        draw_column(ImageDraw.Draw(layer), col['names'], f, x, top + col['top'] * Hm, col['pitch'] * Hm, align, col['probe'])
+        # Thicken the glyphs by `weight` on each side (a dilation; PIL's own stroker mis-draws the Japanese fonts)
+        s = int(round(col.get('weight', 0) * Hm))
+        if s: layer = layer.filter(ImageFilter.MaxFilter(2 * s + 1))
+        img = ImageChops.lighter(img, layer)
     return img
 
 
@@ -244,10 +252,15 @@ def apply(side, cov, rgb, alpha, opac):
     r, a, o = rgb[y0:y1, x0:x1], alpha[y0:y1, x0:x1], opac[y0:y1, x0:x1]
     r[~keep] = 0
     a[~keep & (a > 75)] = 64; o[~keep & (o > 75)] = 64    # plain glass is 64..75
-    c = cov[:, :, None]
-    r[:] = (r * (1 - c) + 255 * c + 0.5).astype(np.uint8)
-    c8 = (cov * 255 + 0.5).astype(np.uint8)
-    a[:] = np.maximum(a, c8); o[:] = np.maximum(o, c8)
+    # A texel covered c by opaque white over glass of alpha ag and colour rg, as straight alpha:
+    # alpha = c + (1 - c) ag, colour = (c white + (1 - c) ag rg) / alpha. The glass is black here, so
+    # a half-covered texel is 80% white at alpha 0.625, not 50% white (which would look dark and thin).
+    ag = a.astype(np.float32) / 255
+    A = cov + (1 - cov) * ag
+    col = (cov * 255 + (1 - cov) * ag * r[:, :, 0].astype(np.float32)) / np.maximum(A, 1e-6)
+    r[:] = (col + 0.5).astype(np.uint8)[:, :, None]
+    a8 = (A * 255 + 0.5).astype(np.uint8)
+    a[:] = a8; o[:] = np.where(cov > 0, a8, o)
 
 
 def preview(work, side, rgb, alpha):
