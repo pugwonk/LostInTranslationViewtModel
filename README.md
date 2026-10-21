@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> **To download the car, go to the [Releases page](https://github.com/pugwonk/viewt/releases/latest).** Grab the zip from there rather than downloading this repository.
+
 # Mitsuoka Viewt 1.2 for Assetto Corsa
 The world's slowest race car, now available as a rolling roadblock in Assetto Corsa
 
