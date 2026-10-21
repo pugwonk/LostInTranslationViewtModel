@@ -1,4 +1,4 @@
-# Mitsuoka Viewt 1.2 for Assetto Corsa
+# Mitsuoka Viewt 1.3 for Assetto Corsa
 Finally you can drive the world's racing tracks in the true enthusiast's sports car: The Mitsuoka Viewt.
 
 ## Installing
