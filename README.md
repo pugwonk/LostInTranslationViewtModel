@@ -1,12 +1,12 @@
 # Mitsuoka Viewt 1.2 for Assetto Corsa
-The world's slowest race car, now available as a rolling roadblock in Assetto Corsa
+Finally you can drive the world's racing tracks in the true enthusiast's sports car: The Mitsuoka Viewt.
 
 ## Installing
 
 1. Download `mitsuoka_viewt_<version>.zip` from the [latest release](https://github.com/pugwonk/viewt/releases/latest).
 2. Drag the zip onto Content Manager, or extract it into your Assetto Corsa folder (it holds `content/cars/...`).
 
-There are four cars: the road car (Mitsuoka Viewt) and the three 24 Hours of Lemons race cars from 2023, 2024 and 2026, listed under it in Content Manager. Custom Shaders Patch is recommended: it runs the dash clock, the rear-view screen and the gauge lighting at night.
+There are four cars: the road car (Mitsuoka Viewt) and three iterations of the "Lost in Translation" 24 Hours of Lemons race cars. Custom Shaders Patch is recommended: it runs the dash clock, the rear-view screen and the gauge lighting at night.
 
 ## Previews
 
